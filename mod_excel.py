@@ -1,19 +1,19 @@
 import openpyxl
 import os
-from tkinter import filedialog as fd
+# from tkinter import filedialog as fd
 import re
 from openpyxl.styles import Font
 
-def getFilePath():
-    # selecting the file using the askopenfilename() method of filedialog
-    the_file = fd.askopenfilename(
-        title="Select an excel file",
-        filetypes=[("Excel files", "*.xlsx")]
-    )
-    # getting path of a file using the startfile() method of the os module
-    file_path = os.path.abspath(the_file)
-    return file_path
-    # os.startfile(os.path.abspath(the_file))
+# def getFilePath():
+#     # selecting the file using the askopenfilename() method of filedialog
+#     the_file = fd.askopenfilename(
+#         title="Select an excel file",
+#         filetypes=[("Excel files", "*.xlsx")]
+#     )
+#     # getting path of a file using the startfile() method of the os module
+#     file_path = os.path.abspath(the_file)
+#     return file_path
+#     # os.startfile(os.path.abspath(the_file))
 
 
 def add_suffix_to_filename(file_path, suffix):
