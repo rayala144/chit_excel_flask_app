@@ -4,6 +4,7 @@ import os
 import re
 from openpyxl.styles import Font
 
+
 # def getFilePath():
 #     # selecting the file using the askopenfilename() method of filedialog
 #     the_file = fd.askopenfilename(
@@ -27,7 +28,6 @@ def add_suffix_to_filename(file_path, suffix):
 def create_sheet(sheet_num: int, workbook):
     work_Sheet = workbook[f'Sheet{str(sheet_num)}']
     return work_Sheet
-
 
 
 def getNumData(start_row: int, column: str, workSheet) -> dict:
@@ -64,9 +64,7 @@ def autoFillSum(start_row: int, end_row: int, column: str, workSheet, num_list: 
     totals.append(total_sum)
 
 
-
 def update_excel(my_workbook):
-
     # my_workbook = openpyxl.load_workbook(file)
     data2 = getNumData(3, 'B', create_sheet(1, my_workbook))
 
@@ -77,7 +75,6 @@ def update_excel(my_workbook):
     autoFillSum(3, 40, 'B', create_sheet(3, my_workbook), num_list, data2, totals)
     autoFillSum(3, 40, 'E', create_sheet(3, my_workbook), num_list, data2, totals)
 
-
     # Grand total
     create_sheet(3, my_workbook)['F43'].font = Font(bold=True, italic=True, size=14)
     create_sheet(3, my_workbook)['E43'].value, create_sheet(3, my_workbook)['F43'].value = "GRAND TOTAL", sum(totals)
@@ -85,12 +82,5 @@ def update_excel(my_workbook):
     return my_workbook
 
 
-
-
-
-
 if __name__ == "__main__":
-
     print(add_suffix_to_filename("uchits.xlsx", "_updated"))
-
-
