@@ -1,6 +1,4 @@
-import openpyxl
 import os
-# from tkinter import filedialog as fd
 import re
 from openpyxl.styles import Font
 
@@ -8,7 +6,7 @@ from openpyxl.styles import Font
 # def getFilePath():
 #     # selecting the file using the askopenfilename() method of filedialog
 #     the_file = fd.askopenfilename(
-#         title="Select an excel file",
+#         title="Select an Excel file",
 #         filetypes=[("Excel files", "*.xlsx")]
 #     )
 #     # getting path of a file using the startfile() method of the os module
