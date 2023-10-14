@@ -9,4 +9,4 @@ RUN pip install --upgrade pip && \
     pip install Flask==3.0.0 && \
     pip install regex==2022.10.31
 
-ENTRYPOINT ["python", "app.py", "--host", "127.0.0.1", "--port", "5000"]
+ENTRYPOINT ["python", "app.py"]
