@@ -1,12 +1,22 @@
 FROM python:3.11.4
 
-COPY . /WebAppExcel/
-
+# Set the working directory in the container
 WORKDIR /WebAppExcel
 
-RUN pip install --upgrade pip && \
-    pip install openpyxl==3.2.0b1 && \
-    pip install Flask==3.0.0 && \
-    pip install regex==2022.10.31
+# Copy the requirements file into the container at /WebAppExcel
+COPY requirements.txt /WebAppExcel/
 
-ENTRYPOINT ["python", "app.py"]
+# Install any needed packages specified in requirements.txt
+RUN pip install -r requirements.txt
+
+# Copy the current directory contents into the container at /WebAppExcel
+COPY . /WebAppExcel/
+
+# Define environment variable
+ENV FLASK_APP=app.py
+
+# Expose port 5000 for the Flask application
+EXPOSE 5000
+
+
+CMD ["flask", "run", "--host=0.0.0.0"]

@@ -14,9 +14,6 @@ app = Flask(__name__)
 def upload_file():
     if request.method == 'POST':
 
-        if 'file' not in request.files:
-            return "File not uploaded yet"
-
         file = request.files['file']
 
         if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
@@ -35,7 +32,12 @@ def upload_file():
             return send_file(output, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name=output_file)
 
         else:
-            return 'Invalid file format. Only Excel files are allowed'
+            return '''
+                <script>
+                    alert("File not uploaded yet");
+                    window.location = "/";
+                </script>
+            '''
 
     return render_template('index.html')
 
