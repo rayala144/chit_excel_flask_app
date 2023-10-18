@@ -30,4 +30,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: rayala/chit-excel-app:latest
+          tags: rayaladock/my_images:latest
