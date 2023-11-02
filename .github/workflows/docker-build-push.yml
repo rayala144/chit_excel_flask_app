@@ -30,4 +30,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: rayaladock/my_images:latest
+          tags: rayaladock/my_images:1.${{ github.run_number }}
