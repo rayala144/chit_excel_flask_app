@@ -15,7 +15,7 @@ def upload_file():
     if request.method == 'POST':
 
         file = request.files['file']
-        
+
         if file.filename:
 
             if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
@@ -47,10 +47,9 @@ def upload_file():
                         window.location = "/";
                     </script>
                 '''
-        
 
     return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080)

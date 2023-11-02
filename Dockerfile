@@ -1,4 +1,4 @@
-FROM python:3.11.4
+FROM python:3.11.6
 
 # Set the working directory in the container
 WORKDIR /WebAppExcel
@@ -16,7 +16,7 @@ COPY . /WebAppExcel/
 ENV FLASK_APP=app.py
 
 # Expose port 5000 for the Flask application
-EXPOSE 5000
+EXPOSE 8080
 
 
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
