@@ -1,19 +1,8 @@
 import os
 import re
 from openpyxl.styles import Font
-
-
-# def getFilePath():
-#     # selecting the file using the askopenfilename() method of filedialog
-#     the_file = fd.askopenfilename(
-#         title="Select an Excel file",
-#         filetypes=[("Excel files", "*.xlsx")]
-#     )
-#     # getting path of a file using the startfile() method of the os module
-#     file_path = os.path.abspath(the_file)
-#     return file_path
-#     # os.startfile(os.path.abspath(the_file))
-
+from openpyxl import load_workbook
+from fpdf import FPDF
 
 def add_suffix_to_filename(file_path, suffix):
     directory_path = os.path.dirname(file_path)
@@ -27,6 +16,23 @@ def create_sheet(sheet_num: int, workbook):
     work_Sheet = workbook[f'Sheet{str(sheet_num)}']
     return work_Sheet
 
+def convert_to_pdf(workbook, sheet_range, page_size):
+    wb = load_workbook(workbook)
+    sheets = wb[sheet_range]
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Sheet to PDF", ln=1, align="C")
+    pdf.cell(200, 10, txt="Page size: " + page_size, ln=2, align="L")
+
+    for sheet in sheets:
+        for row in sheet.iter_rows():
+            for cell in row:
+                pdf.cell(40, 10, str(cell.value), border=1)
+            pdf.ln()
+    
+    pdf.output('updated_output.pdf')
 
 def getNumData(start_row: int, column: str, workSheet) -> dict:
     start_cell, end_row, data_num = workSheet[column + str(start_row)], start_row, {}
