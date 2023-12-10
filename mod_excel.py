@@ -1,5 +1,4 @@
 import os
-# from tkinter import filedialog as fd
 import re
 from openpyxl.styles import Font
 
@@ -7,7 +6,7 @@ from openpyxl.styles import Font
 # def getFilePath():
 #     # selecting the file using the askopenfilename() method of filedialog
 #     the_file = fd.askopenfilename(
-#         title="Select an excel file",
+#         title="Select an Excel file",
 #         filetypes=[("Excel files", "*.xlsx")]
 #     )
 #     # getting path of a file using the startfile() method of the os module
@@ -82,5 +81,4 @@ def update_excel(my_workbook):
 
 
 if __name__ == "__main__":
-    # print(add_suffix_to_filename("uchits.xlsx", "_updated"))
-    pass
+    print(add_suffix_to_filename("uchits.xlsx", "_updated"))
