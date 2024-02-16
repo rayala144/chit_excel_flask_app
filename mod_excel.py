@@ -78,6 +78,7 @@ def update_excel(my_workbook):
     create_sheet(3, my_workbook)['E43'].value, create_sheet(3, my_workbook)['F43'].value = "GRAND TOTAL", sum(totals)
 
     return my_workbook
+    #comment_by_nithin
 
 
 if __name__ == "__main__":
