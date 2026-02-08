@@ -3,18 +3,6 @@ import re
 from openpyxl.styles import Font
 
 
-# def getFilePath():
-#     # selecting the file using the askopenfilename() method of filedialog
-#     the_file = fd.askopenfilename(
-#         title="Select an Excel file",
-#         filetypes=[("Excel files", "*.xlsx")]
-#     )
-#     # getting path of a file using the startfile() method of the os module
-#     file_path = os.path.abspath(the_file)
-#     return file_path
-#     # os.startfile(os.path.abspath(the_file))
-
-
 def add_suffix_to_filename(file_path, suffix):
     directory_path = os.path.dirname(file_path)
     filename, extension = os.path.splitext(os.path.basename(file_path))
@@ -24,7 +12,7 @@ def add_suffix_to_filename(file_path, suffix):
 
 
 def create_sheet(sheet_num: int, workbook):
-    work_Sheet = workbook[f'Sheet{str(sheet_num)}']
+    work_Sheet = workbook[f"Sheet{str(sheet_num)}"]
     return work_Sheet
 
 
@@ -39,16 +27,24 @@ def getNumData(start_row: int, column: str, workSheet) -> dict:
     # length = (end_row - start_row) + 1
 
 
-def autoFillSum(start_row: int, end_row: int, column: str, workSheet, num_list: list, data2: dict, totals: list):
+def autoFillSum(
+    start_row: int,
+    end_row: int,
+    column: str,
+    workSheet,
+    num_list: list,
+    data2: dict,
+    totals: list,
+):
     total_sum = 0
     for row in range(start_row, end_row + 1):
         cell = workSheet[column + str(row)]
         value = cell.value
         if value is not None:
-            str_list = re.findall(r'\d+', value)
+            str_list = re.findall(r"\d+", value)
             temp_sum, count = 0, 0
             for digit in str_list:
-                if digit != '' and digit in num_list:
+                if digit != "" and digit in num_list:
                     count += 1
                     temp_sum += data2[digit]
                 else:
@@ -64,21 +60,24 @@ def autoFillSum(start_row: int, end_row: int, column: str, workSheet, num_list: 
 
 def update_excel(my_workbook):
     # my_workbook = openpyxl.load_workbook(file)
-    data2 = getNumData(3, 'B', create_sheet(1, my_workbook))
+    data2 = getNumData(3, "B", create_sheet(1, my_workbook))
 
     num_list, totals = [str(num) for num in range(1, len(data2) + 1)], []
 
-    autoFillSum(3, 32, 'B', create_sheet(2, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 32, 'E', create_sheet(2, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 40, 'B', create_sheet(3, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 40, 'E', create_sheet(3, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 32, "B", create_sheet(2, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 32, "E", create_sheet(2, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 40, "B", create_sheet(3, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 40, "E", create_sheet(3, my_workbook), num_list, data2, totals)
 
     # Grand total
-    create_sheet(3, my_workbook)['F43'].font = Font(bold=True, italic=True, size=14)
-    create_sheet(3, my_workbook)['E43'].value, create_sheet(3, my_workbook)['F43'].value = "GRAND TOTAL", sum(totals)
+    create_sheet(3, my_workbook)["F43"].font = Font(bold=True, italic=True, size=14)
+    (
+        create_sheet(3, my_workbook)["E43"].value,
+        create_sheet(3, my_workbook)["F43"].value,
+    ) = "GRAND TOTAL", sum(totals)
 
     return my_workbook
-    #comment_by_nithin
+    # comment_by_nithin
 
 
 if __name__ == "__main__":
