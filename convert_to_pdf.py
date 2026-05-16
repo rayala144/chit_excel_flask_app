@@ -1,8 +1,12 @@
 import os
 import sys
+from io import BytesIO
 
 import convertapi
 from convertapi import UploadIO
+from openpyxl import load_workbook
+
+from mod_excel import prepare_workbook_for_pdf
 
 
 def _get_api_credentials():
@@ -35,7 +39,9 @@ if __name__ == "__main__":
     )
 
     with open(input_path, "rb") as f:
-        pdf_bytes = convert_excel_to_pdf(f.read(), os.path.basename(input_path))
+        workbook = load_workbook(filename=BytesIO(f.read()))
+        xlsx_bytes = prepare_workbook_for_pdf(workbook)
+        pdf_bytes = convert_excel_to_pdf(xlsx_bytes, os.path.basename(input_path))
 
     with open(output_path, "wb") as f:
         f.write(pdf_bytes)

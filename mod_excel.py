@@ -1,6 +1,11 @@
 import os
 import re
+from io import BytesIO
+
+from openpyxl import load_workbook
 from openpyxl.styles import Font
+
+PDF_SHEET_NAMES = ("Sheet2", "Sheet3")
 
 
 def add_suffix_to_filename(file_path, suffix):
@@ -78,6 +83,27 @@ def update_excel(my_workbook):
 
     return my_workbook
     # comment_by_nithin
+
+
+def prepare_workbook_for_pdf(workbook) -> bytes:
+    missing = [name for name in PDF_SHEET_NAMES if name not in workbook.sheetnames]
+    if missing:
+        raise ValueError(
+            "Workbook is missing sheets required for PDF: " + ", ".join(missing)
+        )
+
+    buffer = BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+    pdf_workbook = load_workbook(buffer)
+
+    for sheet_name in list(pdf_workbook.sheetnames):
+        if sheet_name not in PDF_SHEET_NAMES:
+            del pdf_workbook[sheet_name]
+
+    output = BytesIO()
+    pdf_workbook.save(output)
+    return output.getvalue()
 
 
 if __name__ == "__main__":

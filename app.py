@@ -5,7 +5,7 @@ from io import BytesIO
 from openpyxl import load_workbook
 
 from convert_to_pdf import convert_excel_to_pdf
-from mod_excel import add_suffix_to_filename, update_excel
+from mod_excel import add_suffix_to_filename, prepare_workbook_for_pdf, update_excel
 
 
 app = Flask(__name__)
@@ -35,9 +35,8 @@ def upload_file():
 
                 if output_format == "pdf":
                     try:
-                        pdf_bytes = convert_excel_to_pdf(
-                            output.getvalue(), output_file
-                        )
+                        pdf_xlsx_bytes = prepare_workbook_for_pdf(updated_workbook)
+                        pdf_bytes = convert_excel_to_pdf(pdf_xlsx_bytes, output_file)
                         return send_file(
                             BytesIO(pdf_bytes),
                             as_attachment=True,
