@@ -1,8 +1,13 @@
 import os
 import re
-from openpyxl.styles import Font
+from io import BytesIO
+
 from openpyxl import load_workbook
 from fpdf import FPDF
+from openpyxl.styles import Font
+
+PDF_SHEET_NAMES = ("Sheet2", "Sheet3")
+
 
 def add_suffix_to_filename(file_path, suffix):
     directory_path = os.path.dirname(file_path)
@@ -13,7 +18,7 @@ def add_suffix_to_filename(file_path, suffix):
 
 
 def create_sheet(sheet_num: int, workbook):
-    work_Sheet = workbook[f'Sheet{str(sheet_num)}']
+    work_Sheet = workbook[f"Sheet{str(sheet_num)}"]
     return work_Sheet
 
 def convert_to_pdf(workbook, sheet_range, page_size):
@@ -45,16 +50,24 @@ def getNumData(start_row: int, column: str, workSheet) -> dict:
     # length = (end_row - start_row) + 1
 
 
-def autoFillSum(start_row: int, end_row: int, column: str, workSheet, num_list: list, data2: dict, totals: list):
+def autoFillSum(
+    start_row: int,
+    end_row: int,
+    column: str,
+    workSheet,
+    num_list: list,
+    data2: dict,
+    totals: list,
+):
     total_sum = 0
     for row in range(start_row, end_row + 1):
         cell = workSheet[column + str(row)]
         value = cell.value
         if value is not None:
-            str_list = re.findall(r'\d+', value)
+            str_list = re.findall(r"\d+", value)
             temp_sum, count = 0, 0
             for digit in str_list:
-                if digit != '' and digit in num_list:
+                if digit != "" and digit in num_list:
                     count += 1
                     temp_sum += data2[digit]
                 else:
@@ -70,20 +83,45 @@ def autoFillSum(start_row: int, end_row: int, column: str, workSheet, num_list: 
 
 def update_excel(my_workbook):
     # my_workbook = openpyxl.load_workbook(file)
-    data2 = getNumData(3, 'B', create_sheet(1, my_workbook))
+    data2 = getNumData(3, "B", create_sheet(1, my_workbook))
 
     num_list, totals = [str(num) for num in range(1, len(data2) + 1)], []
 
-    autoFillSum(3, 32, 'B', create_sheet(2, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 32, 'E', create_sheet(2, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 40, 'B', create_sheet(3, my_workbook), num_list, data2, totals)
-    autoFillSum(3, 40, 'E', create_sheet(3, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 32, "B", create_sheet(2, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 32, "E", create_sheet(2, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 40, "B", create_sheet(3, my_workbook), num_list, data2, totals)
+    autoFillSum(3, 40, "E", create_sheet(3, my_workbook), num_list, data2, totals)
 
     # Grand total
-    create_sheet(3, my_workbook)['F43'].font = Font(bold=True, italic=True, size=14)
-    create_sheet(3, my_workbook)['E43'].value, create_sheet(3, my_workbook)['F43'].value = "GRAND TOTAL", sum(totals)
+    create_sheet(3, my_workbook)["F43"].font = Font(bold=True, italic=True, size=14)
+    (
+        create_sheet(3, my_workbook)["E43"].value,
+        create_sheet(3, my_workbook)["F43"].value,
+    ) = "GRAND TOTAL", sum(totals)
 
     return my_workbook
+    # comment_by_nithin
+
+
+def prepare_workbook_for_pdf(workbook) -> bytes:
+    missing = [name for name in PDF_SHEET_NAMES if name not in workbook.sheetnames]
+    if missing:
+        raise ValueError(
+            "Workbook is missing sheets required for PDF: " + ", ".join(missing)
+        )
+
+    buffer = BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+    pdf_workbook = load_workbook(buffer)
+
+    for sheet_name in list(pdf_workbook.sheetnames):
+        if sheet_name not in PDF_SHEET_NAMES:
+            del pdf_workbook[sheet_name]
+
+    output = BytesIO()
+    pdf_workbook.save(output)
+    return output.getvalue()
 
 
 if __name__ == "__main__":

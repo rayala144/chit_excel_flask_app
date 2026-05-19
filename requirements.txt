@@ -1,4 +1,5 @@
 openpyxl==3.0.10
 Flask==3.0.0
-regex==2023.8.8
+regex==2024.11.6
 gunicorn==21.2.0
+convertapi==2.0.0

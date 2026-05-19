@@ -1,4 +1,4 @@
-FROM python:3.11.4
+FROM python:3.11.6
 
 # Set the working directory in the container
 WORKDIR /WebAppExcel
