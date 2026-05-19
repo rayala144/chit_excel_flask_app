@@ -1,55 +1,72 @@
+import os
+
 from flask import Flask, render_template, request, send_file
 from io import BytesIO
 from openpyxl import load_workbook
-from mod_excel import *
+
+from convert_to_pdf import convert_excel_to_pdf
+from mod_excel import add_suffix_to_filename, prepare_workbook_for_pdf, update_excel
 
 
 app = Flask(__name__)
 
-# app.config['TEMPLATES_AUTO_RELOAD'] = True
-# app.config['TEMPLATE_FOLDER'] = os.path.abspath('templates')
+
+def _pdf_download_name(excel_filename: str) -> str:
+    base, _ = os.path.splitext(excel_filename)
+    return f"{base}_updated.pdf"
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def upload_file():
-    if request.method == 'POST':
-
-        file = request.files['file']
+    if request.method == "POST":
+        file = request.files["file"]
+        output_format = request.form.get("output_format", "excel")
 
         if file.filename:
-
-            if file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
-
+            if file.filename.endswith(".xlsx") or file.filename.endswith(".xls"):
                 my_workbook = load_workbook(filename=BytesIO(file.read()))
                 updated_workbook = update_excel(my_workbook)
 
-                # output_file = add_suffix_to_filename(file, '_updated')
                 output = BytesIO()
                 updated_workbook.save(output)
                 output.seek(0)
 
-                output_file = add_suffix_to_filename(file.filename, '_updated')
+                output_file = add_suffix_to_filename(file.filename, "_updated")
 
-                # Return the updated file for download
-                return send_file(output, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name=output_file)
+                if output_format == "pdf":
+                    try:
+                        pdf_xlsx_bytes = prepare_workbook_for_pdf(updated_workbook)
+                        pdf_bytes = convert_excel_to_pdf(pdf_xlsx_bytes, output_file)
+                        return send_file(
+                            BytesIO(pdf_bytes),
+                            as_attachment=True,
+                            mimetype="application/pdf",
+                            download_name=_pdf_download_name(file.filename),
+                        )
+                    except ValueError as exc:
+                        return render_template("index.html", error=str(exc))
+                    except Exception:
+                        return render_template(
+                            "index.html",
+                            error="PDF conversion failed. Please try again or download as Excel.",
+                        )
 
-            else:
-                return '''
-                    <script>
-                        alert("Only excel files are allowed");
-                        window.location = "/";
-                    </script>
-                '''
-        else:
-            return '''
-                    <script>
-                        alert("File not uploaded yet");
-                        window.location = "/";
-                    </script>
-                '''
+                output.seek(0)
+                return send_file(
+                    output,
+                    as_attachment=True,
+                    mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    download_name=output_file,
+                )
 
-    return render_template('index.html')
+            return render_template(
+                "index.html", error="Only Excel files (.xlsx, .xls) are allowed."
+            )
+
+        return render_template("index.html", error="Please choose a file to upload.")
+
+    return render_template("index.html")
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)

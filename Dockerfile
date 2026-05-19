@@ -15,7 +15,7 @@ COPY . /WebAppExcel/
 # Define environment variable
 ENV FLASK_APP=app.py
 
-# Expose port 5000 for the Flask application
+# Expose port 8080 for the Flask application
 EXPOSE 8080
 
 

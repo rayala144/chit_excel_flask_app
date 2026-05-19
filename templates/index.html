@@ -34,7 +34,6 @@
             border: none;
             border-radius: 24px;
             cursor: pointer;
-            margin-top: 100px;
         }
         .upload-btn:hover {
             background: linear-gradient(to bottom, #255b8a, #153959);
@@ -60,16 +59,46 @@
             font-style: italic;
             color: #888888;
         }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 100px;
+        }
+        .upload-btn {
+            margin-top: 0;
+        }
+        .pdf-btn {
+            background: linear-gradient(to bottom, #c0392b, #922b21);
+        }
+        .pdf-btn:hover {
+            background: linear-gradient(to bottom, #a93226, #7b241c);
+        }
+        .error-message {
+            margin: 24px auto 0;
+            max-width: 520px;
+            padding: 12px 20px;
+            color: #7f1d1d;
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+        }
     </style>
 </head>
 <body>
-    <h1>Upload Excel File</h1>
+    <h1>Hi Daddy!!!!</h1>
+    {% if error %}
+    <p class="error-message">{{ error }}</p>
+    {% endif %}
     <form class="upload-form" method="POST" enctype="multipart/form-data">
         <label class="file-label" for="file-input">Choose file</label>
-        <input id="file-input" class="file-input" type="file" name="file" accept=".xlsx, .xls">
+        <input id="file-input" class="file-input" type="file" name="file" accept=".xlsx, .xls" required>
         <span class="file-name">No file chosen</span>
-        <br>
-        <input class="upload-btn" type="submit" value="Upload">
+        <div class="action-buttons">
+            <button class="upload-btn" type="submit" name="output_format" value="excel">Download Excel</button>
+            <button class="upload-btn pdf-btn" type="submit" name="output_format" value="pdf">Download PDF</button>
+        </div>
     </form>
 
     <script>
