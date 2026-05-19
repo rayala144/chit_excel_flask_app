@@ -3,116 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Excel File</title>
+    <title>Excel Processor - Modern Upload</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, sans-serif;
-            text-align: center;
-            background-color: beige;
-            padding-top: 80px;
-        }
-        h1 {
-            padding: 10px 70px;
-            color: #333333;
-            margin-top: 40px;
-        }
-        .upload-form {
-            margin-top: 49px;
-            padding: 43px;
-            background-color: rgb(255, 255, 255);
-            border-radius: 24px;
-            border: black;
-            display: inline-block;
-        }
-        .upload-btn {
-            padding: 14px 96px;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #ffffff;
-            background: linear-gradient(to bottom, #337ab7, #214f77);
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-        }
-        .upload-btn:hover {
-            background: linear-gradient(to bottom, #255b8a, #153959);
-        }
-        .file-input {
-            display: none;
-        }
-        .file-label {
-            display: inline-block;
-            padding: 6px 12px;
-            background: linear-gradient(to bottom, #559fdf, #425e77);
-            color: #ffffff;
-            border-radius: 24px;
-            cursor: pointer;
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-active: #1d4ed8;
+            --pdf-color: #ef4444;
+            --pdf-hover: #dc2626;
+            --pdf-active: #b91c1c;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --error-bg: #fee2e2;
+            --error-text: #991b1b;
+            --border-color: #e2e8f0;
+            --btn-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .file-label:hover {
-            background: linear-gradient(to bottom, #2d6fa8, #1b486f);
+        * {
+            box-sizing: border-box;
         }
-        .file-name {
-            display: inline-block;
-            margin-left: 30px;
-            font-style: italic;
-            color: #888888;
-        }
-        .action-buttons {
+
+        body {
+            font-family: var(--btn-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
+            align-items: center;
             justify-content: center;
-            margin-top: 100px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-size: 1.125rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .upload-btn {
-            margin-top: 0;
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            padding: 1.25rem;
         }
-        .pdf-btn {
-            background: linear-gradient(to bottom, #c0392b, #922b21);
+
+        h1 {
+            font-family: var(--btn-font);
+            font-size: clamp(1.75rem, 6vw, 2.5rem);
+            font-weight: 800;
+            margin: 0 0 1.5rem;
+            text-align: center;
+            color: var(--text-color);
+            letter-spacing: -0.025em;
+            line-height: 1.2;
         }
-        .pdf-btn:hover {
-            background: linear-gradient(to bottom, #a93226, #7b241c);
+
+        .upload-card {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
+
         .error-message {
-            margin: 24px auto 0;
-            max-width: 520px;
-            padding: 12px 20px;
-            color: #7f1d1d;
-            background-color: #fee2e2;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.25rem;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border-radius: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.45;
             border: 1px solid #fecaca;
-            border-radius: 12px;
+            text-align: left;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 1rem;
+            padding: 2.5rem 1.5rem;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+            cursor: pointer;
+            position: relative;
+            background-color: #fcfcfc;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .drop-zone:active {
+            transform: scale(0.99);
+        }
+
+        .drop-zone__prompt {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--primary-color);
+            display: none;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .btn {
+            font-family: var(--btn-font);
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.25;
+            text-align: center;
+            white-space: nowrap;
+            padding: 1.125rem 1rem;
+            min-height: 3.75rem;
+            border-radius: 0.875rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            transition:
+                background-color 0.2s ease,
+                transform 0.15s ease,
+                box-shadow 0.2s ease;
+            box-shadow:
+                0 2px 4px rgba(15, 23, 42, 0.12),
+                0 1px 2px rgba(15, 23, 42, 0.08);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.35),
+                0 4px 8px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-primary:active,
+        .btn-primary.is-pressed {
+            background-color: var(--primary-active);
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-pdf {
+            background-color: var(--pdf-color);
+        }
+
+        .btn-pdf:hover {
+            background-color: var(--pdf-hover);
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 20px rgba(220, 38, 38, 0.35),
+                0 4px 8px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-pdf:active,
+        .btn-pdf.is-pressed {
+            background-color: var(--pdf-active);
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid #1e293b;
+            outline-offset: 3px;
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 540px) {
+            body {
+                font-size: 1.2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-card {
+                padding: 1.5rem 1.25rem;
+            }
+
+            h1 {
+                margin-bottom: 1.25rem;
+            }
+
+            .drop-zone {
+                padding: 2rem 1rem;
+            }
+
+            .drop-zone__prompt {
+                font-size: 1.15rem;
+            }
+
+            .file-info {
+                font-size: 1.15rem;
+            }
+
+            .error-message {
+                font-size: 1.1rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn {
+                font-size: 1.35rem;
+                min-height: 4.25rem;
+                padding: 1.25rem 1.5rem;
+                border-radius: 1rem;
+            }
+        }
+
+        @media (min-width: 541px) {
+            .container {
+                padding: 2rem;
+            }
+
+            .upload-card {
+                padding: 2.5rem;
+            }
+
+            .btn {
+                font-size: 1.2rem;
+                min-height: 4rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Hi Daddy!!!!</h1>
-    {% if error %}
-    <p class="error-message">{{ error }}</p>
-    {% endif %}
-    <form class="upload-form" method="POST" enctype="multipart/form-data">
-        <label class="file-label" for="file-input">Choose file</label>
-        <input id="file-input" class="file-input" type="file" name="file" accept=".xlsx, .xls" required>
-        <span class="file-name">No file chosen</span>
-        <div class="action-buttons">
-            <button class="upload-btn" type="submit" name="output_format" value="excel">Download Excel</button>
-            <button class="upload-btn pdf-btn" type="submit" name="output_format" value="pdf">Download PDF</button>
+    <div class="container">
+        <h1>Hi Daddy!!!!</h1>
+        
+        <div class="upload-card">
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            <form action="/" method="POST" enctype="multipart/form-data">
+                <div class="drop-zone" id="drop-zone">
+                    <span class="drop-zone__prompt">
+                        <svg class="icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: #94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg><br>
+                        Drag & drop Excel file here or click to browse
+                    </span>
+                    <input type="file" name="file" id="file-input" class="drop-zone__input" accept=".xlsx, .xls" required>
+                    <div id="file-info" class="file-info"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" name="output_format" value="excel" class="btn btn-primary">
+                        Download Excel
+                    </button>
+                    <button type="submit" name="output_format" value="pdf" class="btn btn-pdf">
+                        Download PDF
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 
     <script>
+        const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
-        const fileName = document.querySelector('.file-name');
+        const fileInfo = document.getElementById('file-info');
+        const prompt = document.querySelector('.drop-zone__prompt');
+        const submitButtons = document.querySelectorAll('.btn[type="submit"]');
+        const form = document.querySelector('form');
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileName.textContent = file.name;
-            } else {
-                fileName.textContent = 'No file chosen';
+        submitButtons.forEach((btn) => {
+            const pressOn = () => btn.classList.add('is-pressed');
+            const pressOff = () => btn.classList.remove('is-pressed');
+
+            btn.addEventListener('mousedown', pressOn);
+            btn.addEventListener('mouseup', pressOff);
+            btn.addEventListener('mouseleave', pressOff);
+            btn.addEventListener('touchstart', pressOn, { passive: true });
+            btn.addEventListener('touchend', pressOff);
+            btn.addEventListener('touchcancel', pressOff);
+        });
+
+        form.addEventListener('submit', () => {
+            submitButtons.forEach((btn) => {
+                btn.disabled = true;
+            });
+        });
+
+        dropZone.addEventListener('click', (e) => {
+            if (e.target.closest('.btn')) return;
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            updateFileInfo(fileInput.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        ['dragleave', 'dragend'].forEach(type => {
+            dropZone.addEventListener(type, () => {
+                dropZone.classList.remove('drag-over');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileInfo(e.dataTransfer.files[0]);
             }
         });
+
+        function updateFileInfo(file) {
+            if (file) {
+                fileInfo.textContent = `Selected: ${file.name}`;
+                fileInfo.style.display = 'block';
+                prompt.style.display = 'none';
+            } else {
+                fileInfo.style.display = 'none';
+                prompt.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
