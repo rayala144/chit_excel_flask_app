@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Excel Processor - Modern Upload</title>
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const theme = stored === 'dark' || stored === 'light' ? stored : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -21,8 +28,38 @@
             --text-muted: #64748b;
             --error-bg: #fee2e2;
             --error-text: #991b1b;
+            --error-border: #fecaca;
             --border-color: #e2e8f0;
+            --drop-zone-bg: #fcfcfc;
+            --drop-zone-hover-bg: #eff6ff;
+            --icon-muted: #94a3b8;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --btn-shadow: 0 2px 4px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.08);
+            --focus-outline: #1e293b;
+            --toggle-bg: #ffffff;
+            --toggle-border: #e2e8f0;
+            --toggle-hover: #f1f5f9;
             --btn-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --error-bg: #450a0a;
+            --error-text: #fecaca;
+            --error-border: #7f1d1d;
+            --border-color: #334155;
+            --drop-zone-bg: #0f172a;
+            --drop-zone-hover-bg: #1e3a5f;
+            --icon-muted: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.35);
+            --btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+            --focus-outline: #93c5fd;
+            --toggle-bg: #334155;
+            --toggle-border: #475569;
+            --toggle-hover: #475569;
         }
 
         * {
@@ -42,6 +79,72 @@
             font-size: 1.125rem;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .page-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            padding: 0;
+            border-radius: 0.75rem;
+            border: 1px solid var(--toggle-border);
+            background-color: var(--toggle-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--toggle-hover);
+        }
+
+        .theme-toggle:active {
+            transform: translateY(-50%) scale(0.96);
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 3px solid var(--focus-outline);
+            outline-offset: 3px;
+        }
+
+        .theme-toggle__icon {
+            width: 1.35rem;
+            height: 1.35rem;
+        }
+
+        .theme-toggle__icon--sun {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle__icon--moon {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle__icon--sun {
+            display: block;
         }
 
         .container {
@@ -54,8 +157,6 @@
             font-family: var(--btn-font);
             font-size: clamp(1.75rem, 6vw, 2.5rem);
             font-weight: 800;
-            margin: 0 0 1.5rem;
-            text-align: center;
             color: var(--text-color);
             letter-spacing: -0.025em;
             line-height: 1.2;
@@ -65,8 +166,9 @@
             background-color: var(--card-bg);
             padding: 2.5rem;
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
             text-align: center;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .error-message {
@@ -78,7 +180,7 @@
             font-size: 1.05rem;
             font-weight: 600;
             line-height: 1.45;
-            border: 1px solid #fecaca;
+            border: 1px solid var(--error-border);
             text-align: left;
         }
 
@@ -89,14 +191,14 @@
             transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
             cursor: pointer;
             position: relative;
-            background-color: #fcfcfc;
+            background-color: var(--drop-zone-bg);
             -webkit-tap-highlight-color: transparent;
         }
 
         .drop-zone:hover,
         .drop-zone.drag-over {
             border-color: var(--primary-color);
-            background-color: #eff6ff;
+            background-color: var(--drop-zone-hover-bg);
         }
 
         .drop-zone:active {
@@ -156,9 +258,7 @@
                 background-color 0.2s ease,
                 transform 0.15s ease,
                 box-shadow 0.2s ease;
-            box-shadow:
-                0 2px 4px rgba(15, 23, 42, 0.12),
-                0 1px 2px rgba(15, 23, 42, 0.08);
+            box-shadow: var(--btn-shadow);
         }
 
         .btn-primary {
@@ -200,8 +300,15 @@
         }
 
         .btn:focus-visible {
-            outline: 3px solid #1e293b;
+            outline: 3px solid var(--focus-outline);
             outline-offset: 3px;
+        }
+
+        .drop-zone__icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            color: var(--icon-muted);
         }
 
         .btn:disabled {
@@ -229,7 +336,7 @@
                 padding: 1.5rem 1.25rem;
             }
 
-            h1 {
+            .page-header {
                 margin-bottom: 1.25rem;
             }
 
@@ -280,8 +387,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Hi Daddy!!!!</h1>
-        
+        <div class="page-header">
+            <h1>Hi Daddy!!!!</h1>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme" title="Switch theme">
+                <svg class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <svg class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
+        </div>
+
         <div class="upload-card">
             {% if error %}
             <div class="error-message">{{ error }}</div>
@@ -290,7 +407,7 @@
             <form action="/" method="POST" enctype="multipart/form-data">
                 <div class="drop-zone" id="drop-zone">
                     <span class="drop-zone__prompt">
-                        <svg class="icon" style="width: 48px; height: 48px; margin-bottom: 1rem; color: #94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="drop-zone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg><br>
                         Drag & drop Excel file here or click to browse
@@ -314,6 +431,21 @@
     </div>
 
     <script>
+        const themeToggle = document.getElementById('theme-toggle');
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const isDark = theme === 'dark';
+            themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+            themeToggle.title = isDark ? 'Light mode' : 'Dark mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+        });
+
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const fileInfo = document.getElementById('file-info');
