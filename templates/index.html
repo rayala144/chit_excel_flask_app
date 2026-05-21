@@ -299,11 +299,13 @@
                     <div id="file-info" class="file-info"></div>
                 </div>
 
+                <input type="hidden" name="output_format" id="output-format" value="excel">
+
                 <div class="action-buttons">
-                    <button type="submit" name="output_format" value="excel" class="btn btn-primary">
+                    <button type="submit" data-output-format="excel" class="btn btn-primary">
                         Download Excel
                     </button>
-                    <button type="submit" name="output_format" value="pdf" class="btn btn-pdf">
+                    <button type="submit" data-output-format="pdf" class="btn btn-pdf">
                         Download PDF
                     </button>
                 </div>
@@ -316,8 +318,16 @@
         const fileInput = document.getElementById('file-input');
         const fileInfo = document.getElementById('file-info');
         const prompt = document.querySelector('.drop-zone__prompt');
+        const outputFormatInput = document.getElementById('output-format');
         const submitButtons = document.querySelectorAll('.btn[type="submit"]');
         const form = document.querySelector('form');
+
+        submitButtons.forEach((btn) => {
+            const format = btn.dataset.outputFormat;
+            btn.addEventListener('click', () => {
+                outputFormatInput.value = format;
+            });
+        });
 
         submitButtons.forEach((btn) => {
             const pressOn = () => btn.classList.add('is-pressed');
