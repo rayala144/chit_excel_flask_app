@@ -26,9 +26,16 @@
             --card-bg: rgba(255, 255, 255, 0.75);
             --text-color: #1e293b;
             --text-muted: #64748b;
-            --error-bg: rgba(fee2e2, 0.8);
+            --error-bg: rgba(254, 226, 226, 0.85);
             --error-text: #991b1b;
-            --error-border: rgba(fecaca, 0.5);
+            --error-border: rgba(254, 202, 202, 0.6);
+            --mesh-1: rgba(59, 130, 246, 0.45);
+            --mesh-2: rgba(139, 92, 246, 0.35);
+            --mesh-3: rgba(236, 72, 153, 0.3);
+            --mesh-4: rgba(34, 211, 238, 0.25);
+            --thread-opacity: 0.72;
+            --thread-glow: 0.45;
+            --shine-opacity: 0.55;
             --border-color: rgba(226, 232, 240, 0.8);
             --drop-zone-bg: rgba(252, 252, 252, 0.4);
             --drop-zone-hover-bg: rgba(239, 246, 255, 0.6);
@@ -40,8 +47,9 @@
             --toggle-border: rgba(226, 232, 240, 0.5);
             --toggle-hover: rgba(241, 245, 249, 0.7);
             --btn-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --glass-blur: 16px;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+            --glass-blur: 24px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.55);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0) 55%);
         }
 
         [data-theme="dark"] {
@@ -62,7 +70,15 @@
             --toggle-bg: rgba(51, 65, 85, 0.5);
             --toggle-border: rgba(71, 85, 105, 0.5);
             --toggle-hover: rgba(71, 85, 105, 0.7);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.14);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0) 52%);
+            --mesh-1: rgba(37, 99, 235, 0.5);
+            --mesh-2: rgba(124, 58, 237, 0.4);
+            --mesh-3: rgba(219, 39, 119, 0.28);
+            --mesh-4: rgba(6, 182, 212, 0.22);
+            --thread-opacity: 0.82;
+            --thread-glow: 0.55;
+            --shine-opacity: 0.35;
         }
 
         * {
@@ -71,12 +87,7 @@
 
         body {
             font-family: var(--btn-font);
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0, transparent 50%),
-                radial-gradient(at 50% 0%, rgba(139, 92, 246, 0.15) 0, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0, transparent 50%);
-            background-attachment: fixed;
+            background-color: transparent;
             color: var(--text-color);
             margin: 0;
             display: flex;
@@ -88,13 +99,103 @@
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             transition: background-color 0.4s ease, color 0.4s ease;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        [data-theme="dark"] body {
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.3) 0, transparent 50%),
-                radial-gradient(at 50% 0%, rgba(88, 28, 135, 0.3) 0, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(131, 24, 67, 0.3) 0, transparent 50%);
+        .liquid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background-color: var(--bg-color);
+            transition: background-color 0.4s ease;
+        }
+
+        .liquid-bg__mesh {
+            position: absolute;
+            inset: -20%;
+            background:
+                radial-gradient(ellipse 55% 45% at 12% 18%, var(--mesh-1), transparent 68%),
+                radial-gradient(ellipse 50% 40% at 88% 12%, var(--mesh-3), transparent 65%),
+                radial-gradient(ellipse 60% 50% at 72% 78%, var(--mesh-2), transparent 70%),
+                radial-gradient(ellipse 45% 40% at 8% 82%, var(--mesh-4), transparent 68%),
+                radial-gradient(ellipse 40% 35% at 50% 50%, var(--mesh-2), transparent 72%);
+            filter: blur(42px);
+            opacity: 0.9;
+            animation: mesh-drift 22s ease-in-out infinite alternate;
+        }
+
+        .liquid-bg__threads {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: var(--thread-opacity);
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, var(--thread-glow)));
+        }
+
+        .thread {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .thread-group {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: thread-sway 9s ease-in-out infinite;
+        }
+
+        .thread-group--1 { animation-duration: 11s; animation-delay: 0s; }
+        .thread-group--2 { animation-duration: 8s; animation-delay: -1.5s; }
+        .thread-group--3 { animation-duration: 13s; animation-delay: -3s; }
+        .thread-group--4 { animation-duration: 10s; animation-delay: -2s; }
+        .thread-group--5 { animation-duration: 12s; animation-delay: -4s; }
+        .thread-group--6 { animation-duration: 9s; animation-delay: -0.5s; }
+        .thread-group--7 { animation-duration: 14s; animation-delay: -5s; }
+        .thread-group--8 { animation-duration: 10s; animation-delay: -2.5s; }
+
+        .thread--1 { stroke: url(#thread-blue); stroke-width: 2.2; animation: thread-flow 14s linear infinite; }
+        .thread--2 { stroke: url(#thread-violet); stroke-width: 1.8; animation: thread-flow 18s linear infinite reverse; animation-delay: -3s; }
+        .thread--3 { stroke: url(#thread-pink); stroke-width: 2.4; animation: thread-flow 16s linear infinite; animation-delay: -6s; }
+        .thread--4 { stroke: url(#thread-cyan); stroke-width: 1.6; animation: thread-flow 20s linear infinite reverse; animation-delay: -2s; }
+        .thread--5 { stroke: url(#thread-amber); stroke-width: 2; animation: thread-flow 15s linear infinite; animation-delay: -8s; }
+        .thread--6 { stroke: url(#thread-emerald); stroke-width: 1.9; animation: thread-flow 17s linear infinite reverse; animation-delay: -4s; }
+        .thread--7 { stroke: url(#thread-rose); stroke-width: 2.1; animation: thread-flow 19s linear infinite; animation-delay: -1s; }
+        .thread--8 { stroke: url(#thread-indigo); stroke-width: 1.7; animation: thread-flow 21s linear infinite reverse; animation-delay: -7s; }
+
+        .liquid-bg__shine {
+            position: absolute;
+            inset: 0;
+            background: var(--glass-sheen);
+            opacity: var(--shine-opacity);
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes mesh-drift {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(2%, 3%) scale(1.04); }
+        }
+
+        @keyframes thread-flow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -800; }
+        }
+
+        @keyframes thread-sway {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(12px, -18px) rotate(1.5deg); }
+            66% { transform: translate(-10px, 14px) rotate(-1deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .liquid-bg__mesh,
+            .thread-group,
+            .thread {
+                animation: none;
+            }
         }
 
         .page-header {
@@ -165,6 +266,8 @@
         }
 
         .container {
+            position: relative;
+            z-index: 1;
             width: 100%;
             max-width: 640px;
             padding: 1.25rem;
@@ -198,15 +301,24 @@
             overflow: hidden;
         }
 
-        /* Glass gloss effect */
         .upload-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%);
+            height: 55%;
+            background: var(--glass-sheen);
+            pointer-events: none;
+            border-radius: 2rem 2rem 0 0;
+        }
+
+        .upload-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
             pointer-events: none;
         }
 
@@ -225,14 +337,19 @@
         }
 
         .drop-zone {
-            border: 2px dashed var(--border-color);
+            border: 1px solid var(--border-color);
+            outline: 2px dashed var(--border-color);
+            outline-offset: -4px;
             border-radius: 1.25rem;
             padding: 2.5rem 1.5rem;
-            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease, outline-color 0.2s ease;
             cursor: pointer;
             position: relative;
             background-color: var(--drop-zone-bg);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
             -webkit-tap-highlight-color: transparent;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
 
         .drop-zone:hover,
@@ -365,6 +482,11 @@
         }
 
         @media (max-width: 540px) {
+            .thread-group--7,
+            .thread-group--8 {
+                display: none;
+            }
+
             body {
                 font-size: 1.2rem;
             }
@@ -427,6 +549,79 @@
     </style>
 </head>
 <body>
+    <div class="liquid-bg" aria-hidden="true">
+        <div class="liquid-bg__mesh"></div>
+        <svg class="liquid-bg__threads" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="thread-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#60a5fa" />
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#a78bfa" />
+                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-pink" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ec4899" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#f472b6" />
+                    <stop offset="100%" stop-color="#db2777" stop-opacity="0.25" />
+                </linearGradient>
+                <linearGradient id="thread-cyan" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#22d3ee" />
+                    <stop offset="100%" stop-color="#0891b2" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-amber" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#d97706" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#34d399" />
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-rose" x1="100%" y1="50%" x2="0%" y2="50%">
+                    <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#fb7185" />
+                    <stop offset="100%" stop-color="#e11d48" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-indigo" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#818cf8" />
+                    <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.15" />
+                </linearGradient>
+            </defs>
+            <g class="thread-group thread-group--1">
+                <path class="thread thread--1" stroke-dasharray="120 680" d="M-80,120 C200,40 400,200 620,90 S1000,30 1280,140" />
+            </g>
+            <g class="thread-group thread-group--2">
+                <path class="thread thread--2" stroke-dasharray="90 720" d="M-60,520 C180,620 420,380 700,500 S1050,680 1300,440" />
+            </g>
+            <g class="thread-group thread-group--3">
+                <path class="thread thread--3" stroke-dasharray="140 660" d="M100,-40 C280,180 350,320 480,420 S720,620 920,760" />
+            </g>
+            <g class="thread-group thread-group--4">
+                <path class="thread thread--4" stroke-dasharray="100 700" d="M1100,-20 C900,200 750,280 600,380 S300,520 80,680" />
+            </g>
+            <g class="thread-group thread-group--5">
+                <path class="thread thread--5" stroke-dasharray="110 690" d="M-40,380 C220,280 500,480 780,340 S1120,220 1280,360" />
+            </g>
+            <g class="thread-group thread-group--6">
+                <path class="thread thread--6" stroke-dasharray="95 710" d="M200,820 C400,600 550,520 720,400 S980,180 1180,60" />
+            </g>
+            <g class="thread-group thread-group--7">
+                <path class="thread thread--7" stroke-dasharray="130 670" d="M-100,640 C150,500 380,700 640,580 S980,420 1240,520" />
+            </g>
+            <g class="thread-group thread-group--8">
+                <path class="thread thread--8" stroke-dasharray="85 730" d="M1050,720 C820,540 600,460 440,300 S180,120 -40,200" />
+            </g>
+        </svg>
+        <div class="liquid-bg__shine"></div>
+    </div>
+
     <div class="container">
         <div class="page-header">
             <h1>Hi Daddy!!!!</h1>
