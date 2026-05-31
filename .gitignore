@@ -1,5 +1,6 @@
 # Virtual environments
 .venv/
+.venv-*/
 venv/
 env/
 ENV/
@@ -55,9 +56,18 @@ coverage.xml
 # IDE and editors
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 *~
+
+# Deploy / platform local cache
+.vercel/
+
+# Local uploads and generated outputs
+*.xlsx
+*.xls
+*.pdf
 
 # OS
 .DS_Store
@@ -67,6 +77,3 @@ desktop.ini
 # Logs and local outputs
 *.log
 *.tmp
-*_updated.xlsx
-*_updated.xls
-*_converted.pdf

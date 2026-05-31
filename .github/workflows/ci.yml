@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [master, new_features]
+  pull_request:
+    branches: [master, new_features]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v --tb=short --cov=app --cov=mod_excel --cov-report=term-missing

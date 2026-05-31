@@ -29,5 +29,5 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
-          push: true
+          push: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
           tags: rayaladock/my_images:1.${{ github.run_number }}
