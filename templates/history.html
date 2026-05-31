@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File History - Excel Processor</title>
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const theme = stored === 'dark' || stored === 'light' ? stored : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root, [data-theme="light"] {
+            --primary-color: #3b82f6;
+            --bg-color: #d8e2f2;
+            --card-bg: rgba(255, 255, 255, 0.42);
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: rgba(255, 255, 255, 0.65);
+            --card-shadow: 0 8px 32px rgba(59, 130, 246, 0.14), 0 4px 16px rgba(15, 23, 42, 0.06);
+            --glass-blur: 24px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.72);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.25) 38%, rgba(255, 255, 255, 0) 52%);
+            --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            --glass-saturate: saturate(1.35);
+            --badge-excel-bg: rgba(59, 130, 246, 0.15);
+            --badge-excel-text: #1d4ed8;
+            --badge-pdf-bg: rgba(239, 68, 68, 0.15);
+            --badge-pdf-text: #b91c1c;
+            --row-hover: rgba(255, 255, 255, 0.35);
+            --link-color: #2563eb;
+            --delete-color: #dc2626;
+            --delete-hover: #b91c1c;
+            --success-bg: rgba(34, 197, 94, 0.15);
+            --success-text: #15803d;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(51, 65, 85, 0.8);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.14);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0) 52%);
+            --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            --glass-saturate: saturate(1.2);
+            --badge-excel-bg: rgba(59, 130, 246, 0.25);
+            --badge-excel-text: #93c5fd;
+            --badge-pdf-bg: rgba(239, 68, 68, 0.25);
+            --badge-pdf-text: #fca5a5;
+            --row-hover: rgba(255, 255, 255, 0.05);
+            --link-color: #93c5fd;
+            --delete-color: #f87171;
+            --delete-hover: #ef4444;
+            --success-bg: rgba(34, 197, 94, 0.2);
+            --success-text: #86efac;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 1.25rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        [data-theme="light"] body {
+            background-image:
+                radial-gradient(ellipse 70% 55% at 12% 8%, rgba(59, 130, 246, 0.28), transparent 58%),
+                radial-gradient(ellipse 60% 50% at 88% 12%, rgba(168, 85, 247, 0.22), transparent 55%);
+            background-attachment: fixed;
+        }
+
+        [data-theme="dark"] body {
+            background-image:
+                radial-gradient(ellipse 65% 50% at 15% 10%, rgba(37, 99, 235, 0.35), transparent 58%),
+                radial-gradient(ellipse 55% 45% at 90% 20%, rgba(124, 58, 237, 0.25), transparent 55%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            border: var(--glass-border);
+            background: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--link-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { text-decoration: underline; }
+
+        .history-card {
+            background: var(--card-bg);
+            border: var(--glass-border);
+            border-radius: 1.5rem;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .history-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 40%;
+            background: var(--glass-sheen);
+            pointer-events: none;
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        tbody tr:hover { background: var(--row-hover); }
+
+        .filename {
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .subtext {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge--excel {
+            background: var(--badge-excel-bg);
+            color: var(--badge-excel-text);
+        }
+
+        .badge--pdf {
+            background: var(--badge-pdf-bg);
+            color: var(--badge-pdf-text);
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: 1.5px solid var(--link-color);
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .download-link svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .download-link:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .delete-form {
+            margin: 0;
+        }
+
+        .delete-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--delete-color);
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .delete-btn svg {
+            width: 1.15rem;
+            height: 1.15rem;
+        }
+
+        .delete-btn:hover {
+            color: var(--delete-hover);
+            background: rgba(220, 38, 38, 0.12);
+        }
+
+        .success-message {
+            margin-bottom: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            background: var(--success-bg);
+            color: var(--success-text);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            th:nth-child(3), td:nth-child(3) { display: none; }
+            th, td { padding: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>File History</h1>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch theme">☀</button>
+        </div>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">← Back to upload</a>
+        </nav>
+
+        {% if deleted %}
+        <div class="success-message">Record deleted.</div>
+        {% endif %}
+
+        <div class="history-card">
+            {% if not storage_enabled %}
+            <div class="empty-state">Storage is not configured. Set Supabase env vars to enable history.</div>
+            {% elif not records %}
+            <div class="empty-state">No processed files yet. Upload an Excel file to get started.</div>
+            {% else %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original file</th>
+                            <th>Format</th>
+                            <th>Processed at</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>
+                                <span class="filename">{{ record.original_filename }}</span>
+                                {% if record.processed_filename %}
+                                <span class="subtext">{{ record.processed_filename }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.output_format == 'pdf' %}
+                                <span class="badge badge--pdf">PDF</span>
+                                {% else %}
+                                <span class="badge badge--excel">Excel</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.created_at %}
+                                {{ record.created_at }} IST
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <a class="download-link" href="{{ url_for('download_stored_file', record_id=record.id) }}" aria-label="Download file" title="Download">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        </svg>
+                                    </a>
+                                    <form class="delete-form" method="POST" action="{{ url_for('delete_stored_file', record_id=record.id) }}" onsubmit="return confirm('Delete this record permanently?');">
+                                        <button type="submit" class="delete-btn" aria-label="Delete record" title="Delete">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀' : '🌙';
+        }
+        themeToggle.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+        });
+        applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+    </script>
+</body>
+</html>
