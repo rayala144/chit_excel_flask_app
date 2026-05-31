@@ -296,9 +296,97 @@
             text-align: center;
         }
 
+        .cell-meta {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
         @media (max-width: 640px) {
-            th:nth-child(3), td:nth-child(3) { display: none; }
-            th, td { padding: 0.85rem; }
+            body {
+                padding: 1rem;
+            }
+
+            .page-header {
+                padding-right: 3.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .nav-bar {
+                margin-bottom: 1rem;
+            }
+
+            .table-wrap {
+                overflow-x: visible;
+            }
+
+            .history-table thead {
+                display: none;
+            }
+
+            .history-table,
+            .history-table tbody,
+            .history-table tr,
+            .history-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .history-table tr {
+                padding: 1rem 1.1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .history-table tr:last-child {
+                border-bottom: none;
+            }
+
+            .history-table td {
+                padding: 0.45rem 0;
+                border: none;
+                text-align: left;
+            }
+
+            .history-table td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--text-muted);
+                margin-bottom: 0.25rem;
+            }
+
+            .history-table td.cell-file {
+                padding-top: 0;
+                padding-bottom: 0.75rem;
+                margin-bottom: 0.35rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .history-table td.cell-file::before {
+                display: none;
+            }
+
+            .history-table td.cell-actions {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                padding-top: 0.65rem;
+            }
+
+            .history-table td.cell-actions::before {
+                margin-bottom: 0;
+            }
+
+            .history-table td.cell-actions .actions {
+                flex-shrink: 0;
+            }
+
+            .cell-meta {
+                word-break: break-word;
+            }
         }
     </style>
 </head>
@@ -324,7 +412,7 @@
             <div class="empty-state">No processed files yet. Upload an Excel file to get started.</div>
             {% else %}
             <div class="table-wrap">
-                <table>
+                <table class="history-table">
                     <thead>
                         <tr>
                             <th>Original file</th>
@@ -336,27 +424,29 @@
                     <tbody>
                         {% for record in records %}
                         <tr>
-                            <td>
+                            <td class="cell-file">
                                 <span class="filename">{{ record.original_filename }}</span>
                                 {% if record.processed_filename %}
                                 <span class="subtext">{{ record.processed_filename }}</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Format">
                                 {% if record.output_format == 'pdf' %}
                                 <span class="badge badge--pdf">PDF</span>
                                 {% else %}
                                 <span class="badge badge--excel">Excel</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Processed at">
+                                <span class="cell-meta">
                                 {% if record.created_at %}
                                 {{ record.created_at }} IST
                                 {% else %}
                                 —
                                 {% endif %}
+                                </span>
                             </td>
-                            <td>
+                            <td class="cell-actions" data-label="Actions">
                                 <div class="actions">
                                     <a class="download-link" href="{{ url_for('download_stored_file', record_id=record.id) }}" aria-label="Download file" title="Download">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
