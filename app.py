@@ -1,53 +1,95 @@
+import logging
 import os
-
-from flask import Flask, render_template, request, send_file
+import time
 from io import BytesIO
+
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, send_file
 from openpyxl import load_workbook
-from supabase import create_client, Client
+from supabase import Client, create_client
 
 from convert_to_pdf import convert_excel_to_pdf
 from mod_excel import add_suffix_to_filename, prepare_workbook_for_pdf, update_excel
 
+load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Initialize Supabase Client using environment variables
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase: Client = None
+_supabase_client: Client | None = None
+_supabase_init_attempted = False
 
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def _supabase_credentials() -> tuple[str, str] | None:
+    url = (os.environ.get("SUPABASE_URL") or "").strip()
+    key = (
+        os.environ.get("SUPABASE_SERVICE_KEY")
+        or os.environ.get("SUPABASE_KEY")
+        or os.environ.get("SUPABASE_ANON_KEY")
+        or ""
+    ).strip()
+    if not url or not key:
+        return None
+    return url, key
+
+
+def get_supabase() -> Client | None:
+    """Return Supabase client, or None if unset/invalid (app still runs)."""
+    global _supabase_client, _supabase_init_attempted
+
+    if _supabase_client is not None:
+        return _supabase_client
+
+    if _supabase_init_attempted:
+        return None
+
+    _supabase_init_attempted = True
+    credentials = _supabase_credentials()
+    if not credentials:
+        return None
+
+    url, key = credentials
+    try:
+        _supabase_client = create_client(url, key)
+    except Exception as exc:
+        logger.warning("Supabase disabled: %s", exc)
+        _supabase_client = None
+
+    return _supabase_client
+
 
 def _pdf_download_name(excel_filename: str) -> str:
     base, _ = os.path.splitext(excel_filename)
     return f"{base}_updated.pdf"
 
+
 def upload_to_supabase_storage(file_bytes: bytes, destination_path: str) -> str:
     """Uploads bytes to Supabase storage bucket and returns the public download URL."""
+    supabase = get_supabase()
     if not supabase:
         return ""
-    
+
     bucket_name = "chit-files"
-    # Upload file data
     supabase.storage.from_(bucket_name).upload(
         path=destination_path,
         file=file_bytes,
-        file_options={"content-type": "application/octet-stream"}
+        file_options={"content-type": "application/octet-stream"},
     )
-    # Retrieve public URL
     return supabase.storage.from_(bucket_name).get_public_url(destination_path)
+
 
 def log_to_database(orig_name, format_type, orig_url, proc_url):
     """Inserts metadata logs into the PostgreSQL database."""
+    supabase = get_supabase()
     if not supabase:
         return
-    
+
     data = {
         "original_filename": orig_name,
         "output_format": format_type,
         "uploaded_file_url": orig_url,
-        "processed_file_url": proc_url
+        "processed_file_url": proc_url,
     }
     supabase.table("file_logs").insert(data).execute()
 
@@ -60,27 +102,21 @@ def upload_file():
 
         if file.filename:
             if file.filename.endswith(".xlsx") or file.filename.endswith(".xls"):
-                # Read original bytes before consumption by openpyxl
                 original_file_bytes = file.read()
-                
-                # Load workbook using BytesIO
+
                 my_workbook = load_workbook(filename=BytesIO(original_file_bytes))
                 updated_workbook = update_excel(my_workbook)
 
-                # Save updated workbook into memory buffer
                 output_excel_buffer = BytesIO()
                 updated_workbook.save(output_excel_buffer)
                 processed_bytes = output_excel_buffer.getvalue()
 
                 output_file = add_suffix_to_filename(file.filename, "_updated")
-                
-                # Unique folder structure in Cloud Storage based on timestamps to avoid name collisions
-                import time
+
                 timestamp_prefix = str(int(time.time()))
                 orig_cloud_path = f"{timestamp_prefix}/original_{file.filename}"
                 proc_cloud_path = f"{timestamp_prefix}/{output_file}"
 
-                # Handle PDF layout branch if selected
                 if output_format == "pdf":
                     try:
                         pdf_xlsx_bytes = prepare_workbook_for_pdf(updated_workbook)
@@ -94,22 +130,30 @@ def upload_file():
                             error="PDF conversion failed. Please try again or download as Excel.",
                         )
 
-                # --- Database & Storage Execution Loop ---
-                if supabase:
+                if get_supabase():
                     try:
-                        # 1. Upload both files concurrently into cloud storage buckets
-                        uploaded_url = upload_to_supabase_storage(original_file_bytes, orig_cloud_path)
-                        processed_url = upload_to_supabase_storage(processed_bytes, proc_cloud_path)
-                        
-                        # 2. Write structural telemetry metadata into PostgreSQL (timestamp is auto-generated by DB)
-                        log_to_database(file.filename, output_format, uploaded_url, processed_url)
+                        uploaded_url = upload_to_supabase_storage(
+                            original_file_bytes, orig_cloud_path
+                        )
+                        processed_url = upload_to_supabase_storage(
+                            processed_bytes, proc_cloud_path
+                        )
+                        log_to_database(
+                            file.filename, output_format, uploaded_url, processed_url
+                        )
                     except Exception as db_err:
-                        print(f"Cloud logging failed: {db_err}")
-                        # Non-breaking check: compilation still serves file to client if DB fluctuates
+                        logger.warning("Cloud logging failed: %s", db_err)
 
-                # Serve file stream straight back to browser
-                mimetype = "application/pdf" if output_format == "pdf" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                download_name = _pdf_download_name(file.filename) if output_format == "pdf" else output_file
+                mimetype = (
+                    "application/pdf"
+                    if output_format == "pdf"
+                    else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                download_name = (
+                    _pdf_download_name(file.filename)
+                    if output_format == "pdf"
+                    else output_file
+                )
 
                 return send_file(
                     BytesIO(processed_bytes),
