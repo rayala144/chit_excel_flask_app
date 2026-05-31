@@ -4,3 +4,4 @@ regex==2024.11.6
 gunicorn==23.0.0
 convertapi==2.0.0
 supabase==2.4.0
+fpdf==1.7.2
