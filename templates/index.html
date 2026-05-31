@@ -3,116 +3,669 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Excel File</title>
+    <title>Excel Processor - Modern Upload</title>
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const theme = stored === 'dark' || stored === 'light' ? stored : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, sans-serif;
-            text-align: center;
-            background-color: beige;
-            padding-top: 80px;
-        }
-        h1 {
-            padding: 10px 70px;
-            color: #333333;
-            margin-top: 40px;
-        }
-        .upload-form {
-            margin-top: 49px;
-            padding: 43px;
-            background-color: rgb(255, 255, 255);
-            border-radius: 24px;
-            border: black;
-            display: inline-block;
-        }
-        .upload-btn {
-            padding: 14px 96px;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #ffffff;
-            background: linear-gradient(to bottom, #337ab7, #214f77);
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-        }
-        .upload-btn:hover {
-            background: linear-gradient(to bottom, #255b8a, #153959);
-        }
-        .file-input {
-            display: none;
-        }
-        .file-label {
-            display: inline-block;
-            padding: 6px 12px;
-            background: linear-gradient(to bottom, #559fdf, #425e77);
-            color: #ffffff;
-            border-radius: 24px;
-            cursor: pointer;
+        :root,
+        [data-theme="light"] {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-active: #1d4ed8;
+            --pdf-color: #ef4444;
+            --pdf-hover: #dc2626;
+            --pdf-active: #b91c1c;
+            --bg-color: #d8e2f2;
+            --card-bg: rgba(255, 255, 255, 0.42);
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --error-bg: rgba(254, 226, 226, 0.72);
+            --error-text: #991b1b;
+            --error-border: rgba(254, 202, 202, 0.55);
+            --border-color: rgba(255, 255, 255, 0.65);
+            --drop-zone-bg: rgba(255, 255, 255, 0.32);
+            --drop-zone-hover-bg: rgba(255, 255, 255, 0.52);
+            --icon-muted: #94a3b8;
+            --card-shadow:
+                0 8px 32px rgba(59, 130, 246, 0.14),
+                0 4px 16px rgba(15, 23, 42, 0.06);
+            --btn-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            --focus-outline: #1e293b;
+            --toggle-bg: rgba(255, 255, 255, 0.45);
+            --toggle-border: 1px solid rgba(255, 255, 255, 0.75);
+            --toggle-hover: rgba(255, 255, 255, 0.62);
+            --toggle-shadow: 0 4px 16px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            --btn-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --glass-blur: 24px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.72);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.25) 38%, rgba(255, 255, 255, 0) 52%);
+            --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            --glass-saturate: saturate(1.35);
         }
 
-        .file-label:hover {
-            background: linear-gradient(to bottom, #2d6fa8, #1b486f);
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --error-bg: rgba(69, 10, 10, 0.8);
+            --error-text: #fecaca;
+            --error-border: rgba(127, 29, 29, 0.5);
+            --border-color: rgba(51, 65, 85, 0.8);
+            --drop-zone-bg: rgba(15, 23, 42, 0.4);
+            --drop-zone-hover-bg: rgba(30, 58, 95, 0.6);
+            --icon-muted: #64748b;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            --focus-outline: #93c5fd;
+            --toggle-bg: rgba(51, 65, 85, 0.5);
+            --toggle-border: rgba(71, 85, 105, 0.5);
+            --toggle-hover: rgba(71, 85, 105, 0.7);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.14);
+            --glass-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0) 52%);
+            --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            --toggle-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            --glass-saturate: saturate(1.2);
         }
-        .file-name {
-            display: inline-block;
-            margin-left: 30px;
-            font-style: italic;
-            color: #888888;
+
+        * {
+            box-sizing: border-box;
         }
-        .action-buttons {
+
+        body {
+            font-family: var(--btn-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
+            align-items: center;
             justify-content: center;
-            margin-top: 100px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-size: 1.125rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.4s ease, color 0.4s ease, background-image 0.4s ease;
         }
-        .upload-btn {
-            margin-top: 0;
+
+        [data-theme="light"] body {
+            background-image:
+                radial-gradient(ellipse 70% 55% at 12% 8%, rgba(59, 130, 246, 0.28), transparent 58%),
+                radial-gradient(ellipse 60% 50% at 88% 12%, rgba(168, 85, 247, 0.22), transparent 55%),
+                radial-gradient(ellipse 65% 55% at 78% 88%, rgba(236, 72, 153, 0.18), transparent 58%),
+                radial-gradient(ellipse 55% 45% at 8% 82%, rgba(34, 211, 238, 0.2), transparent 52%);
+            background-attachment: fixed;
         }
-        .pdf-btn {
-            background: linear-gradient(to bottom, #c0392b, #922b21);
+
+        [data-theme="dark"] body {
+            background-image:
+                radial-gradient(ellipse 65% 50% at 15% 10%, rgba(37, 99, 235, 0.35), transparent 58%),
+                radial-gradient(ellipse 55% 45% at 90% 20%, rgba(124, 58, 237, 0.25), transparent 55%),
+                radial-gradient(ellipse 60% 50% at 70% 90%, rgba(219, 39, 119, 0.2), transparent 58%);
+            background-attachment: fixed;
         }
-        .pdf-btn:hover {
-            background: linear-gradient(to bottom, #a93226, #7b241c);
+
+        .page-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 3rem;
+            margin-bottom: 1.5rem;
         }
+
+        .page-header h1 {
+            margin: 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            padding: 0;
+            border-radius: 1rem;
+            border: var(--toggle-border);
+            background-color: var(--toggle-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            box-shadow: var(--toggle-shadow);
+            backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--toggle-hover);
+        }
+
+        .theme-toggle:active {
+            transform: translateY(-50%) scale(0.96);
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 3px solid var(--focus-outline);
+            outline-offset: 3px;
+        }
+
+        .theme-toggle__icon {
+            width: 1.35rem;
+            height: 1.35rem;
+        }
+
+        .theme-toggle__icon--sun {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle__icon--moon {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle__icon--sun {
+            display: block;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            padding: 1.25rem;
+        }
+
+        h1 {
+            font-family: var(--btn-font);
+            font-size: clamp(1.75rem, 6vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-color);
+            letter-spacing: -0.025em;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] h1 {
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-card {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 2rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) var(--glass-saturate);
+            border: var(--glass-border);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55%;
+            background: var(--glass-sheen);
+            pointer-events: none;
+            border-radius: 2rem 2rem 0 0;
+        }
+
+        .upload-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: var(--glass-inset);
+            pointer-events: none;
+        }
+
         .error-message {
-            margin: 24px auto 0;
-            max-width: 520px;
-            padding: 12px 20px;
-            color: #7f1d1d;
-            background-color: #fee2e2;
-            border: 1px solid #fecaca;
-            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.25rem;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border-radius: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.45;
+            border: 1px solid var(--error-border);
+            text-align: left;
+            backdrop-filter: blur(12px) var(--glass-saturate);
+            -webkit-backdrop-filter: blur(12px) var(--glass-saturate);
+            box-shadow: var(--glass-inset);
+        }
+
+        .drop-zone {
+            border: 1px solid var(--border-color);
+            outline: 2px dashed var(--border-color);
+            outline-offset: -4px;
+            border-radius: 1.25rem;
+            padding: 2.5rem 1.5rem;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease, outline-color 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            background-color: var(--drop-zone-bg);
+            backdrop-filter: blur(12px) var(--glass-saturate);
+            -webkit-backdrop-filter: blur(12px) var(--glass-saturate);
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: var(--glass-inset);
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--primary-color);
+            background-color: var(--drop-zone-hover-bg);
+            border-style: solid;
+        }
+
+        .drop-zone:active {
+            transform: scale(0.99);
+        }
+
+        .drop-zone__prompt {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--primary-color);
+            display: none;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .btn {
+            font-family: var(--btn-font);
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.25;
+            text-align: center;
+            white-space: nowrap;
+            padding: 1.125rem 1rem;
+            min-height: 3.75rem;
+            border-radius: 0.875rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            transition:
+                background-color 0.2s ease,
+                transform 0.15s ease,
+                box-shadow 0.2s ease;
+            box-shadow: var(--btn-shadow);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, 0.35),
+                0 4px 8px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-primary:active,
+        .btn-primary.is-pressed {
+            background-color: var(--primary-active);
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-pdf {
+            background-color: var(--pdf-color);
+        }
+
+        .btn-pdf:hover {
+            background-color: var(--pdf-hover);
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 20px rgba(220, 38, 38, 0.35),
+                0 4px 8px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-pdf:active,
+        .btn-pdf.is-pressed {
+            background-color: var(--pdf-active);
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid var(--focus-outline);
+            outline-offset: 3px;
+        }
+
+        .drop-zone__icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            color: var(--icon-muted);
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 540px) {
+            body {
+                font-size: 1.2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-card {
+                padding: 1.5rem 1.25rem;
+            }
+
+            .page-header {
+                margin-bottom: 1.25rem;
+            }
+
+            .drop-zone {
+                padding: 2rem 1rem;
+            }
+
+            .drop-zone__prompt {
+                font-size: 1.15rem;
+            }
+
+            .file-info {
+                font-size: 1.15rem;
+            }
+
+            .error-message {
+                font-size: 1.1rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn {
+                font-size: 1.35rem;
+                min-height: 4.25rem;
+                padding: 1.25rem 1.5rem;
+                border-radius: 1rem;
+            }
+        }
+
+        @media (min-width: 541px) {
+            .container {
+                padding: 2rem;
+            }
+
+            .upload-card {
+                padding: 2.5rem;
+            }
+
+            .btn {
+                font-size: 1.2rem;
+                min-height: 4rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Hi Daddy!!!!</h1>
-    {% if error %}
-    <p class="error-message">{{ error }}</p>
-    {% endif %}
-    <form class="upload-form" method="POST" enctype="multipart/form-data">
-        <label class="file-label" for="file-input">Choose file</label>
-        <input id="file-input" class="file-input" type="file" name="file" accept=".xlsx, .xls" required>
-        <span class="file-name">No file chosen</span>
-        <div class="action-buttons">
-            <button class="upload-btn" type="submit" name="output_format" value="excel">Download Excel</button>
-            <button class="upload-btn pdf-btn" type="submit" name="output_format" value="pdf">Download PDF</button>
+    <div class="liquid-bg" aria-hidden="true">
+        <div class="liquid-bg__mesh"></div>
+        <svg class="liquid-bg__threads" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="thread-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#60a5fa" />
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-violet" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#a78bfa" />
+                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-pink" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ec4899" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#f472b6" />
+                    <stop offset="100%" stop-color="#db2777" stop-opacity="0.25" />
+                </linearGradient>
+                <linearGradient id="thread-cyan" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#22d3ee" />
+                    <stop offset="100%" stop-color="#0891b2" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-amber" x1="0%" y1="50%" x2="100%" y2="50%">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#d97706" stop-opacity="0.15" />
+                </linearGradient>
+                <linearGradient id="thread-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#34d399" />
+                    <stop offset="100%" stop-color="#059669" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-rose" x1="100%" y1="50%" x2="0%" y2="50%">
+                    <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.15" />
+                    <stop offset="50%" stop-color="#fb7185" />
+                    <stop offset="100%" stop-color="#e11d48" stop-opacity="0.2" />
+                </linearGradient>
+                <linearGradient id="thread-indigo" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2" />
+                    <stop offset="50%" stop-color="#818cf8" />
+                    <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.15" />
+                </linearGradient>
+            </defs>
+            <g class="thread-group thread-group--1">
+                <path class="thread thread--1" stroke-dasharray="120 680" d="M-80,120 C200,40 400,200 620,90 S1000,30 1280,140" />
+            </g>
+            <g class="thread-group thread-group--2">
+                <path class="thread thread--2" stroke-dasharray="90 720" d="M-60,520 C180,620 420,380 700,500 S1050,680 1300,440" />
+            </g>
+            <g class="thread-group thread-group--3">
+                <path class="thread thread--3" stroke-dasharray="140 660" d="M100,-40 C280,180 350,320 480,420 S720,620 920,760" />
+            </g>
+            <g class="thread-group thread-group--4">
+                <path class="thread thread--4" stroke-dasharray="100 700" d="M1100,-20 C900,200 750,280 600,380 S300,520 80,680" />
+            </g>
+            <g class="thread-group thread-group--5">
+                <path class="thread thread--5" stroke-dasharray="110 690" d="M-40,380 C220,280 500,480 780,340 S1120,220 1280,360" />
+            </g>
+            <g class="thread-group thread-group--6">
+                <path class="thread thread--6" stroke-dasharray="95 710" d="M200,820 C400,600 550,520 720,400 S980,180 1180,60" />
+            </g>
+            <g class="thread-group thread-group--7">
+                <path class="thread thread--7" stroke-dasharray="130 670" d="M-100,640 C150,500 380,700 640,580 S980,420 1240,520" />
+            </g>
+            <g class="thread-group thread-group--8">
+                <path class="thread thread--8" stroke-dasharray="85 730" d="M1050,720 C820,540 600,460 440,300 S180,120 -40,200" />
+            </g>
+        </svg>
+        <div class="liquid-bg__shine"></div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Hi Daddy!!!!</h1>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme" title="Switch theme">
+                <svg class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <svg class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
         </div>
-    </form>
+
+        <div class="upload-card">
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            <form action="/" method="POST" enctype="multipart/form-data">
+                <div class="drop-zone" id="drop-zone">
+                    <span class="drop-zone__prompt">
+                        <svg class="drop-zone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg><br>
+                        Drag & drop Excel file here or click to browse
+                    </span>
+                    <input type="file" name="file" id="file-input" class="drop-zone__input" accept=".xlsx, .xls" required>
+                    <div id="file-info" class="file-info"></div>
+                </div>
+
+                <input type="hidden" name="output_format" id="output-format" value="excel">
+
+                <div class="action-buttons">
+                    <button type="submit" data-output-format="excel" class="btn btn-primary">
+                        Download Excel
+                    </button>
+                    <button type="submit" data-output-format="pdf" class="btn btn-pdf">
+                        Download PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        const fileInput = document.getElementById('file-input');
-        const fileName = document.querySelector('.file-name');
+        const themeToggle = document.getElementById('theme-toggle');
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileName.textContent = file.name;
-            } else {
-                fileName.textContent = 'No file chosen';
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const isDark = theme === 'dark';
+            themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+            themeToggle.title = isDark ? 'Light mode' : 'Dark mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+        });
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const prompt = document.querySelector('.drop-zone__prompt');
+        const outputFormatInput = document.getElementById('output-format');
+        const submitButtons = document.querySelectorAll('.btn[type="submit"]');
+        const form = document.querySelector('form');
+
+        submitButtons.forEach((btn) => {
+            const format = btn.dataset.outputFormat;
+            btn.addEventListener('click', () => {
+                outputFormatInput.value = format;
+            });
+        });
+
+        submitButtons.forEach((btn) => {
+            const pressOn = () => btn.classList.add('is-pressed');
+            const pressOff = () => btn.classList.remove('is-pressed');
+
+            btn.addEventListener('mousedown', pressOn);
+            btn.addEventListener('mouseup', pressOff);
+            btn.addEventListener('mouseleave', pressOff);
+            btn.addEventListener('touchstart', pressOn, { passive: true });
+            btn.addEventListener('touchend', pressOff);
+            btn.addEventListener('touchcancel', pressOff);
+        });
+
+        form.addEventListener('submit', () => {
+            submitButtons.forEach((btn) => {
+                btn.disabled = true;
+            });
+        });
+
+        dropZone.addEventListener('click', (e) => {
+            if (e.target.closest('.btn')) return;
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            updateFileInfo(fileInput.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        ['dragleave', 'dragend'].forEach(type => {
+            dropZone.addEventListener(type, () => {
+                dropZone.classList.remove('drag-over');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileInfo(e.dataTransfer.files[0]);
             }
         });
+
+        function updateFileInfo(file) {
+            if (file) {
+                fileInfo.textContent = `Selected: ${file.name}`;
+                fileInfo.style.display = 'block';
+                prompt.style.display = 'none';
+            } else {
+                fileInfo.style.display = 'none';
+                prompt.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
