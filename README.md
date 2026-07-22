@@ -1,4 +1,4 @@
-# Chit Excel Flask App
+# Chit Excel Flask App - For my father...
 
 A Flask web application for processing chit-fund Excel workbooks. Upload an `.xlsx` or `.xls` file, run automated calculations and formatting, then download the updated Excel file or a PDF export. Optional Supabase integration stores uploads and processed files with a searchable history page.
 
